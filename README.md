@@ -9,27 +9,17 @@ go get github.com/yamada-ai/functional
 ```
 
 
-## Example
+## Usage
 
+### Using Functions
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/yourusername/functional"
-)
+import "github.com/yamada-ai/functional"
 
 func main() {
-	// Example usage
-	result := functional.Start([]int{1, 2, 3, 4}).
-		Filter(func(v int, _ int) bool {
-			return v%2 == 0
-		}).
-		Map(func(v int, _ int) int {
-			return v * v
-		}).
-		Result()
-
-	fmt.Println(result) // Output: [4, 16]
+    f := functional.Pipe(
+        func(x int) int { return x + 1 },
+        func(x int) int { return x * 2 },
+    )
+    println(f(5)) // 12
 }
 ```

@@ -1,30 +1,64 @@
 package functional
 
-import (
-	"github.com/samber/lo"
-)
-
-// Pipe構造体: チェーン可能な構造
-type Pipe[T any] struct {
-	items []T
+// Filter: スライスを条件でフィルタリング
+func Filter[T any](s []T, predicate func(T) bool) []T {
+	res := make([]T, 0)
+	for _, v := range s {
+		if predicate(v) {
+			res = append(res, v)
+		}
+	}
+	return res
 }
 
-// チェーン開始
-func Start[T any](items []T) Pipe[T] {
-	return Pipe[T]{items}
+// Map: スライス要素を別の型に変換
+func Map[T any, R any](s []T, mapper func(T) R) []R {
+	mapped := make([]R, len(s))
+	for i, v := range s {
+		mapped[i] = mapper(v)
+	}
+	return mapped
 }
 
-// Filterメソッド: 条件に合う要素を抽出
-func (p Pipe[T]) Filter(predicate func(T, int) bool) Pipe[T] {
-	return Pipe[T]{lo.Filter(p.items, predicate)}
+// Reduce: スライス要素を累積処理
+func Reduce[T any, R any](s []T, initial R, reducer func(R, T) R) R {
+	acc := initial
+	for _, v := range s {
+		acc = reducer(acc, v)
+	}
+	return acc
 }
 
-// Mapメソッド: 要素を変換
-func (p Pipe[T]) Map(mapper func(T, int) T) Pipe[T] {
-	return Pipe[T]{lo.Map(p.items, mapper)}
+// 基本的なパイプライン
+func Pipe[T any](funcs ...func(T) T) func(T) T {
+	return func(arg T) T {
+		for _, f := range funcs {
+			arg = f(arg)
+		}
+		return arg
+	}
 }
 
-// 結果を取得
-func (p Pipe[T]) Result() []T {
-	return p.items
+// 同様にComposeAll (逆順) を用意してもよい:
+func ComposeAll[T any](funcs ...func(T) T) func(T) T {
+	return func(arg T) T {
+		for i := len(funcs) - 1; i >= 0; i-- {
+			arg = funcs[i](arg)
+		}
+		return arg
+	}
+}
+
+// 2ステップ型変換用Compose
+func Compose2[A, B, C any](f1 func(A) B, f2 func(B) C) func(A) C {
+	return func(arg A) C {
+		return f2(f1(arg))
+	}
+}
+
+// 3ステップ版（必要なら）
+func Compose3[A, B, C, D any](f1 func(A) B, f2 func(B) C, f3 func(C) D) func(A) D {
+	return func(arg A) D {
+		return f3(f2(f1(arg)))
+	}
 }
