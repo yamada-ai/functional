@@ -29,6 +29,16 @@ func Reduce[T any, R any](s []T, initial R, reducer func(R, T) R) R {
 	return acc
 }
 
+// GroupBy: キーに応じて分類
+func GroupBy[T any, K comparable](s []T, keyFunc func(T) K) map[K][]T {
+	result := make(map[K][]T)
+	for _, v := range s {
+		key := keyFunc(v)
+		result[key] = append(result[key], v)
+	}
+	return result
+}
+
 // 基本的なパイプライン
 func Pipe[T any](funcs ...func(T) T) func(T) T {
 	return func(arg T) T {

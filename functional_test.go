@@ -79,3 +79,41 @@ func TestReduce(t *testing.T) {
 	sum := Reduce(nums, 0, func(acc, x int) int { return acc + x })
 	assert.Equal(t, 15, sum)
 }
+
+func TestGroupBy(t *testing.T) {
+	users := []User{
+		{ID: 1, Name: "Alice", Age: 25, IsActive: true},
+		{ID: 2, Name: "Bob", Age: 30, IsActive: false},
+		{ID: 3, Name: "Charlie", Age: 35, IsActive: true},
+		{ID: 4, Name: "Dave", Age: 30, IsActive: true},
+	}
+
+	// 年齢をキーにグルーピング
+	groups := GroupBy(users, func(u User) int { return u.Age })
+
+	assert.Len(t, groups, 3) // 25,30,35 の3グループ
+	assert.Equal(t, []User{{ID: 1, Name: "Alice", Age: 25, IsActive: true}}, groups[25])
+
+	// 30歳はBob(非Active)とDave(Active)
+	assert.Equal(t, []User{
+		{ID: 2, Name: "Bob", Age: 30, IsActive: false},
+		{ID: 4, Name: "Dave", Age: 30, IsActive: true},
+	}, groups[30])
+
+	assert.Equal(t, []User{
+		{ID: 3, Name: "Charlie", Age: 35, IsActive: true},
+	}, groups[35])
+}
+
+func TestGroupByStrings(t *testing.T) {
+	words := []string{"apple", "banana", "apricot", "blueberry", "cherry"}
+	// 先頭文字でグルーピング
+	groups := GroupBy(words, func(w string) rune {
+		return []rune(w)[0]
+	})
+
+	assert.Len(t, groups, 3) // a, b, cの3グループ
+	assert.ElementsMatch(t, []string{"apple", "apricot"}, groups['a'])
+	assert.ElementsMatch(t, []string{"banana", "blueberry"}, groups['b'])
+	assert.ElementsMatch(t, []string{"cherry"}, groups['c'])
+}
